@@ -11,9 +11,26 @@ https://doi.org/10.1038/s41598-025-97202-0
 
 import numpy as np
 import os
+import sys
 import glob
+import json
 
-from main import PIXEL_RESOLUTION, SUBSTRATE_WIDTH_MM, SUBSTRATE_HEIGHT_MM
+# 确保 src 目录在 path 中（支持子进程调用和直接运行）
+_src_dir = os.path.dirname(os.path.abspath(__file__))
+if _src_dir not in sys.path:
+    sys.path.insert(0, _src_dir)
+
+# ---- 读取运行配置 ----
+# 优先从 run_config.json 读取 GUI 传来的参数，否则从 main.py 导入默认值
+_config_path = os.path.join("data", "intermediate", "run_config.json")
+if os.path.exists(_config_path):
+    with open(_config_path, "r", encoding="utf-8") as _f:
+        _cfg = json.load(_f)
+    PIXEL_RESOLUTION   = _cfg.get("PIXEL_RESOLUTION", 0.5)
+    SUBSTRATE_WIDTH_MM = _cfg.get("SUBSTRATE_WIDTH_MM", 150.0)
+    SUBSTRATE_HEIGHT_MM = _cfg.get("SUBSTRATE_HEIGHT_MM", 95.0)
+else:
+    from main import PIXEL_RESOLUTION, SUBSTRATE_WIDTH_MM, SUBSTRATE_HEIGHT_MM
 
 '''
 # 基板尺寸配置（毫米）
@@ -318,6 +335,7 @@ def arrange_single_template(template_idx, template_matrix, target_angle, substra
     
     print(f"模板{template_idx}：排布完成，位置({u},{v})，匹配度{ncc_val:.3f}")
     return updated_substrate, placement_info, True
+
 
 
 ### 1.数据准备
